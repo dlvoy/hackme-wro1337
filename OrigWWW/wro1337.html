@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<!-- saved from url=https://aan.sh/wro1337 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+*{
+    padding:0;
+    margin:0;
+}
+
+p{
+    font-family: Monospace;
+    font-size: 24px;
+    font-style: oblique;
+}
+
+#wrapper {
+    margin-top: 40px; 
+    margin-left: auto;
+    margin-right: auto;
+    width: 480px;
+}
+
+.red {
+    background-image: url("images/red.png");
+}
+
+.green {
+    background-image: url("images/green.png");
+}
+
+.green,.red {
+    float:left;
+    background-size: 60px 60px;
+    width:60px;
+    height:60px;
+    cursor: pointer;
+}
+</style>
+<style type="text/css"></style><script src="aes.js"></script>
+<script>
+
+var makeCRCTable = function(){
+    var c;
+    var crcTable = [];
+    for(var n =0; n < 256; n++){
+        c = n;
+        for(var k =0; k < 8; k++){
+            c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+    }
+    return crcTable;
+}
+
+var checkCRC = function(value) {
+    var crcTable = window.crcTable || (window.crcTable = makeCRCTable());
+    var crc = 0 ^ (-1);
+
+    for (var i = 0; i < 4; i++ ) {
+        crc = (crc << 8) ^ crcTable[(crc ^ value) & 0xFF];
+        value >>= 8;
+    }
+
+    return (crc ^ (-1)) >>> 0;
+}
+
+var encrypted = "";
+
+function onClick()
+{
+    window.total_value ^= this.mask
+    this.className = window.total_value & this.mask ? "green" : "red";
+    
+    var chksum = window.total_value;
+    
+    var key = "";
+    for ( var i = 0; i < 100000; i++ )
+    {
+        chksum = checkCRC(chksum);
+        if ( i ==0 || i == (100000 - 2) )
+            key += chksum.toString();
+            
+    }
+    
+    if (115056530 == chksum)
+    {
+        //var enc = CryptoJS.AES.encrypt("XXXXXX", key);
+        
+        //encrypted = enc.toString();
+
+        //console.log(encrypted);
+    
+        var encrypted = "U2FsdGVkX19QEKeBSpiKOqt6M1Rr2YwnkFw1H4qP4yeH+7ajw0dlYd/6KlEpT9G/JJhNG9iHC2YRiou1nmorEs5vWujdVEIW4WIU5x5XGcPVfoXWijFONTs3M9FwqNNoAUJROM/DsZ6tqn4HDchOdkQ2QDMJXlPex2ZqsGJ6Vrs=";
+        
+        var decrypted = CryptoJS.AES.decrypt(encrypted, key);
+        var secret = decrypted.toString(CryptoJS.enc.Utf8)
+            
+        if( secret.substring(0, 8) == "Congrats" )
+        {
+            console.log(secret);
+            alert(secret);
+        }
+    }
+}
+
+function onLoad()
+{
+    var wrapper = document.getElementById("wrapper");
+    
+    window.total_value = 0;
+    
+    for (var i = 0; i < 32; i++ )
+    {    
+        var div = document.createElement("div");
+        div.onclick = onClick;
+        div.mask = 1<<i;
+        div.className = "red";        
+        wrapper.appendChild(div);
+    }
+}
+</script>
+
+<body onload="onLoad()">
+<div id="wrapper">
+<p>Find a key to join l33t in Wroclaw!</p><p>
+</div>
+
+
+</body></html>

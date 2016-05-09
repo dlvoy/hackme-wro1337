@@ -1,0 +1,8 @@
+_ignore/
+HackApp/build/built-jar.properties
+HackApp/build/
+HackApp/revcrc.memmap
+HackApp/nbproject/private/
+HackApp/nbproject/genfiles.properties
+HackApp/nbproject/build-impl.xml
+HackApp/dist/
