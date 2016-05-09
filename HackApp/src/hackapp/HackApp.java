@@ -14,7 +14,6 @@ public class HackApp {
     public static LargeArray revCRC;
 
     // --- converted from JS ---------------------------------------------------
-    
     static void makeCRCTable() {
 
         for (int n = 0; n < 256; n++) {
@@ -55,7 +54,6 @@ public class HackApp {
     }
 
     // --- reverse functions ---------------------------------------------------
-    
     static int reverseCRC(int value) {
         return revCRC.get(value);
     }
@@ -76,11 +74,14 @@ public class HackApp {
     }
 
     // --- main algorithm ------------------------------------------------------
-    
     public static void main(String[] args) {
 
-        //testFullCRCLookup();
         makeCRCTable();
+
+        if ((args.length == 1) && (args[0].equals("lookup"))) {
+            testFullCRCLookup();
+            return;
+        }
 
         try {
 
@@ -89,18 +90,16 @@ public class HackApp {
 
             if (create) {
 
-                buildRainbowTable();
+                buildReverseCRCTable();
 
-            } else {
-
+            } else if ((args.length == 1) && (args[0].equals("test"))) {
                 testCRC();
                 testKDF();
-
+            } else {
                 // HACK!
                 System.out.println("Reversed KDF secret key: " + reverseKeyDerivate(115056530));
                 // test result
                 System.out.println("KDF secret key: " + keyDerivate(1086825474));
-
             }
 
             revCRC.close();
@@ -110,6 +109,12 @@ public class HackApp {
         }
     }
 
+    /**
+     * Test how long it take to make full lookup over whole domain (CRCs for all
+     * available arguments)
+     *
+     * it take about 20s on my machine
+     */
     private static void testFullCRCLookup() {
         long start = System.nanoTime();
         for (long ui = 0; ui <= Commons.MAX_UNSIGNED; ui++) {
@@ -122,7 +127,10 @@ public class HackApp {
         System.out.printf("Full lookup took %,d ms \n", time / 1000 / 1000);
     }
 
-    private static void buildRainbowTable() {
+    /**
+     * Build reverse CRC lookup table
+     */
+    private static void buildReverseCRCTable() {
         long start = System.nanoTime();
         for (long round = 0; round < 16; round++) {
             for (long ui = 0L; ui <= Commons.MAX_UNSIGNED; ui++) {
@@ -139,9 +147,12 @@ public class HackApp {
         }
 
         long time = System.nanoTime() - start;
-        System.out.printf("Rainbow table build took %,d ms \n", time / 1000 / 1000);
+        System.out.printf("Lookup table build took %,d ms \n", time / 1000 / 1000);
     }
 
+    /**
+     * Smoke test KDF and it's reverse function
+     */
     private static void testKDF() {
         System.out.println("================================");
         System.out.println("KDF 0 key: " + keyDerivate(0));
@@ -162,6 +173,9 @@ public class HackApp {
         System.out.println("================================");
     }
 
+    /**
+     * Smoke test CRC and it's reverse function
+     */
     private static void testCRC() {
         System.out.println("================================");
         System.out.println("CRC 0: " + checkCRC(0));
